@@ -10,6 +10,7 @@ import {
     Image,
 } from 'react-native';
 
+
 const { width, height } = Dimensions.get('window');
 
 // Concept: Data Array
@@ -17,25 +18,25 @@ const { width, height } = Dimensions.get('window');
 const slides = [
     {
         id: '1',
-        image: 'https://illustrations.popsy.co/amber/man-riding-a-rocket.svg',
+        image: require('../assets/Thirdimg.jpg'),
         title: 'Track Your Mood',
         description: 'Monitor your daily emotions and mental well-being with ease',
     },
     {
         id: '2',
-        image: 'https://illustrations.popsy.co/amber/woman-holding-a-book.svg',
+        image: require('../assets/imageTwo.jpg'),
         title: 'Journal Entries',
         description: 'Write your thoughts, feelings, and experiences every day',
     },
     {
         id: '3',
-        image: 'https://illustrations.popsy.co/amber/man-and-woman-holding-a-chart.svg',
+        image: require('../assets/imageFour.jpg'),
         title: 'Insights & Analytics',
         description: 'View patterns and trends in your mental health journey',
     },
     {
         id: '4',
-        image: 'https://illustrations.popsy.co/amber/meditation.svg',
+        image:require('../assets/imageOne.jpg'),
         title: 'Stay Consistent',
         description: 'Build healthy habits and maintain your mental wellness',
     },
@@ -81,10 +82,14 @@ const SlideItem = ({ item }) => {
                 },
             ]}
         >
-            {/* Concept: Image Component */}
-            {/* Online illustration use kar rahe hain */}
+            
             <Animated.Image
-                source={{ uri: item.image }}
+               
+                source={
+                    typeof item.image === 'string' 
+                        ? { uri: item.image } 
+                        : item.image
+                }
                 style={[
                     styles.illustration,
                     {
