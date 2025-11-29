@@ -116,7 +116,7 @@ export default function HomeScreen({ navigation }) {
 
       {/* Bottom bar */}
       <View style={styles.bottomBar}>
-        <TouchableOpacity style={styles.tab}><Ionicons name="newspaper-outline" size={22} color="#003E3E" /><Text style={styles.tabLabel}>Entries</Text></TouchableOpacity>
+        <TouchableOpacity style={styles.tab} onPress={() => navigation.navigate("Entries")}><Ionicons name="newspaper-outline" size={22} color="#003E3E" /><Text style={styles.tabLabel}>Entries</Text></TouchableOpacity>
         <TouchableOpacity style={styles.tab} onPress={() => navigation.navigate("StatsScreen")}><Ionicons name="stats-chart" size={22} color="#003E3E" /><Text style={styles.tabLabel}>Stats</Text></TouchableOpacity>
 
         <TouchableOpacity style={styles.plusBtn} onPress={() => navigation.navigate("JournalEntry")}>
