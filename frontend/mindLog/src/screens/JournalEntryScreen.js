@@ -1,4 +1,5 @@
 import React, { useState, useContext } from "react";
+import uuid from "react-native-uuid";
 import {
   View,
   Text,
@@ -34,6 +35,7 @@ export default function JournalEntryScreen({ navigation }) {
     }
 
     const newEntry = {
+      id: uuid.v4(),
       text,
       mood: selectedMood.name,
       sleep: sleep || null,
