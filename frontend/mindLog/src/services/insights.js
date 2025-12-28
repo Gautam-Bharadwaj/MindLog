@@ -1,118 +1,87 @@
-import { getEntries } from './storage'
+import { getEntries } from './storage';
 
-// numerical mapping for scoring 
 const MOOD_SCORES = {
-  'rad': 2,
-  'good': 1,
-  'meh': 0,
-  'bad': -1,
-  'awful': -2,
-}
+  'rad': 2, 'good': 1, 'meh': 0, 'bad': -1, 'awful': -2,
+};
 
-
- // calculate total score and the frequency counts for moods and tags.
- 
 const calculateFrequencies = (entries) => {
   const moodCounts = {};
   const tagCounts = {};
   let totalScore = 0;
   
   entries.forEach(entry => {
-    // mood and score calculation
+    // 1. Mood Calculation
     const mood = entry.mood;
     if (mood && MOOD_SCORES[mood] !== undefined) {
-      moodCounts[mood] = (moodCounts[mood] || 0) + 1
-      totalScore += MOOD_SCORES[mood]
+      moodCounts[mood] = (moodCounts[mood] || 0) + 1;
+      totalScore += MOOD_SCORES[mood];
     }
     
-    // tag calculation
-    const tags = entry.tags
-    if (tags && Array.isArray(tags)) {
-      tags.forEach(tag => {
-        tagCounts[tag] = (tagCounts[tag] || 0) + 1
-      })
+    // 2. Tag Calculation (Combining Sleep and Social)
+    if (entry.sleep) {
+      tagCounts[entry.sleep] = (tagCounts[entry.sleep] || 0) + 1;
     }
-  })
+    if (entry.social) {
+      tagCounts[entry.social] = (tagCounts[entry.social] || 0) + 1;
+    }
+  });
   
   return { moodCounts, tagCounts, totalScore };
 };
 
-
 export const getInsights = async (days = 7) => { 
- 
   const findMostCommon = (counts) => {
     return Object.entries(counts).reduce(
-      (acc, [key, value]) => {
-        if (value > acc.count) {
-          return { name: key, count: value };
-        }
-        return acc
-      },
+      (acc, [key, value]) => (value > acc.count ? { name: key, count: value } : acc),
       { name: 'N/A', count: 0 } 
-    )
-  }
-  
+    );
+  };
 
   const allEntries = await getEntries();
   
-  // filter entries for the specific time
   const cutoffDate = new Date();
   cutoffDate.setDate(cutoffDate.getDate() - days);
   
+  // 3. Fix: Use 'entry.date' instead of 'timestamp'
   const recentEntries = allEntries.filter(entry => {
-    return new Date(entry.timestamp) >= cutoffDate;
+    return new Date(entry.date) >= cutoffDate;
   });
   
   if (recentEntries.length === 0) {
-    // no entries calculate 
     return {
       mostCommonMood: { name: 'N/A', count: 0 },
       mostCommonTag: { name: 'N/A', count: 0 },
       summaryMessage: `No entries in the last ${days} days. Start logging your mood!`,
       moodTrendData: [],
-    }
+      timePeriod: days, // Ensure this is returned
+    };
   }
 
-  // frequency calculations and average score
   const { moodCounts, tagCounts, totalScore } = calculateFrequencies(recentEntries);
-  const totalEntries = recentEntries.length;
-  const averageScore = totalScore / totalEntries
-
+  const averageScore = totalScore / recentEntries.length;
   
-  const mostCommonMood = findMostCommon(moodCounts)
-  const mostCommonTag = findMostCommon(tagCounts)
+  const mostCommonMood = findMostCommon(moodCounts);
+  const mostCommonTag = findMostCommon(tagCounts);
 
-  // summary
   let summaryMessage = "";
   const mostMood = mostCommonMood.name.toUpperCase();
   const mostTag = mostCommonTag.name;
 
   if (averageScore >= 1.5) {
-    // very positive
-    summaryMessage = `You've had a fantastic streak! Your most common mood was ${mostMood}. It seems like your focus on ${mostTag} is really paying off!`;
+    summaryMessage = `Fantastic streak! Your most common mood was ${mostMood}. Focusing on ${mostTag} is paying off!`;
   } else if (averageScore >= 0.5) {
-    // medium positive
-    summaryMessage = `Things are looking up! Your average mood is positive, and ${mostTag} was your most frequent activity. Keep seeking out what brings you joy.`;
+    summaryMessage = `Things are looking up! Average mood is positive. ${mostTag} was your top activity.`;
   } else if (averageScore <= -1.0) {
-    
-    if (mostTag !== 'N/A') {
-        summaryMessage = `It looks like you've been having a tough time. Your most frequent tag was "${mostTag}". Take a moment to reflect on how this activity is impacting your mood.`;
-    } else {
-        summaryMessage = `You've faced some challenges this period. Remember to be kind to yourself and log your activities to find potential triggers.`;
-    }
+    summaryMessage = mostTag !== 'N/A' 
+      ? `Tough time lately. Top tag: "${mostTag}". Reflect on how this impacts you.`
+      : `You've faced challenges. Be kind to yourself.`;
   } else {
-    // neutral
-    if (mostTag !== 'N/A') {
-        summaryMessage = `Your mood is stable and centered around ${mostMood}. Your most frequent activity was "${mostTag}". Continue building a consistent routine.`;
-    } else {
-        summaryMessage = `Your mood has been generally steady. Keep logging to help uncover any subtle patterns in the coming weeks.`;
-    }
+    summaryMessage = `Stable mood centered around ${mostMood}. Top activity: "${mostTag}".`;
   }
-
-
   
+  // 4. Fix: Map 'date' correctly for the trend graph
   const moodTrendData = recentEntries.map(entry => ({
-    date: new Date(entry.timestamp).toLocaleDateString(),
+    date: new Date(entry.date).toLocaleDateString(),
     moodValue: MOOD_SCORES[entry.mood] || 0,
     moodName: entry.mood,
   }));
@@ -123,7 +92,5 @@ export const getInsights = async (days = 7) => {
     mostCommonTag,
     summaryMessage,
     moodTrendData,
-  }
-}
-
-export { MOOD_SCORES,calculateFrequencies }
+  };
+};
