@@ -7,6 +7,7 @@ import SplashScreen from './src/screens/SplashScreen';
 import OnboardingScreen from './src/screens/OnboardingScreen';
 import AppNavigator from './src/navigation/AppNavigator';
 import { JournalProvider } from './src/context/JournalContext';
+import { SafeAreaProvider } from 'react-native-safe-area-context';
 
 export default function App() {
   const [isLoading, setIsLoading] = useState(true);
@@ -29,16 +30,19 @@ export default function App() {
   }
 
   return (
-    <PaperProvider>
-      <JournalProvider>
-        <NavigationContainer>
-          <View style={styles.container}>
-            <AppNavigator />
-            <StatusBar style="auto" />
-          </View>
-        </NavigationContainer>
-      </JournalProvider>
-    </PaperProvider>
+    <SafeAreaProvider>
+      <PaperProvider>
+        <JournalProvider>
+          <NavigationContainer>
+            <View style={styles.container}>
+              <AppNavigator />
+              <StatusBar style="auto" />
+            </View>
+          </NavigationContainer>
+        </JournalProvider>
+      </PaperProvider>
+    </SafeAreaProvider>
+    
   );
 }
 
